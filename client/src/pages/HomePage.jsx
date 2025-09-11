@@ -78,7 +78,7 @@ const HomePage = () => {
       name: 'Necklaces',
       path: '/products?category=necklaces',
       image: '/images/categories/necklaces.jpg',
-      description: 'Beautiful necklaces for every style'
+      description: 'Beautiful necklaces to complete your look'
     },
     {
       name: 'Earrings',
@@ -120,113 +120,84 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-900 via-primary-800 to-primary-600 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      <section className="relative bg-gradient-to-r from-primary-900 via-primary-800 to-primary-600 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white opacity-10 rounded-full animate-bounce-subtle"></div>
-          <div className="absolute top-32 right-20 w-32 h-32 border-2 border-gold-400 opacity-20 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-20 left-1/3 w-24 h-24 border-2 border-white opacity-15 rounded-full animate-bounce-subtle" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/4 right-1/4 w-16 h-16 bg-gradient-to-br from-gold-400 to-gold-600 opacity-20 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-32 h-32 border border-white rounded-full"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 border border-white rounded-full"></div>
+          <div className="absolute bottom-20 left-1/3 w-16 h-16 border border-white rounded-full"></div>
         </div>
 
         <div className="relative container-custom section-padding">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-10 animate-fade-in-up">
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-semibold">
-                  <span className="w-2 h-2 bg-gold-400 rounded-full animate-pulse"></span>
-                  New Collection Available
-                </div>
-                
-                <h1 className="text-6xl lg:text-7xl font-black leading-tight">
-                  Meaningful 
-                  <span className="block bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500 bg-clip-text text-transparent animate-pulse">
-                    Everyday Jewelry
-                  </span>
-                  <span className="block text-4xl lg:text-5xl font-light mt-2">
-                    for the T-Girlies ✨
-                  </span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="space-y-4">
+                <h1 className="text-hero font-bold leading-tight">
+                  Meaningful Everyday <span className="gold-gradient">Jewelry</span> for the T-Girlies
                 </h1>
-                
-                <p className="text-xl text-gray-100 leading-relaxed max-w-xl font-light">
+                <p className="text-xl text-gray-100 leading-relaxed max-w-lg">
                   Discover our curated collection of elegant jewelry pieces designed 
-                  to celebrate your unique style and tell your story every single day.
+                  to celebrate your unique style and tell your story.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/products"
-                  className="group relative overflow-hidden bg-gradient-to-r from-gold-500 to-gold-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:from-gold-600 hover:to-gold-700 transition-all duration-500 shadow-2xl hover:shadow-gold/25 transform hover:-translate-y-1"
+                  className="btn-primary btn-lg inline-flex items-center justify-center gap-2 group"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    Shop Collection
-                    <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+                  Shop Collection
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                
                 <Link
                   to="/about"
-                  className="group border-2 border-white text-white hover:bg-white hover:text-primary-900 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-500 backdrop-blur-sm bg-white bg-opacity-10 hover:bg-opacity-100"
+                  className="btn-outline border-white text-white hover:bg-white hover:text-primary-600 btn-lg"
                 >
-                  <span className="flex items-center justify-center gap-3">
-                    Our Story
-                    <div className="w-2 h-2 bg-current rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                  </span>
+                  Our Story
                 </Link>
               </div>
 
               {/* Special Offer */}
-              <div className="glass-dark rounded-3xl p-8 border border-white border-opacity-20 transform hover:scale-105 transition-transform duration-300">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gold-500 to-gold-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-white text-xl font-black">%</span>
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gold-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">%</span>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Special Offer for New T-Girls</h3>
-                    <p className="text-gray-200 leading-relaxed">
-                      Get 10% off your first order when you join our exclusive community
-                    </p>
-                  </div>
+                  <h3 className="text-lg font-semibold">Special Offer for New Customers</h3>
                 </div>
+                <p className="text-gray-100 mb-3">
+                  Get 10% off your first order when you sign up for our newsletter
+                </p>
                 <button
                   onClick={() => setShowSignupModal(true)}
-                  className="group text-gold-300 hover:text-gold-200 font-semibold flex items-center gap-2 transition-colors"
+                  className="text-gold-300 hover:text-gold-200 font-medium text-sm"
                 >
-                  Claim Your Discount
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  Claim Discount →
                 </button>
               </div>
             </div>
 
             {/* Hero Image */}
             <div className="relative animate-fade-in-up lg:animate-fade-in-right">
-              <div className="relative aspect-square">
-                {/* Decorative rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-white opacity-20 animate-pulse"></div>
-                <div className="absolute inset-4 rounded-full border-2 border-gold-400 opacity-30 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                
-                <div className="relative z-10 aspect-square bg-gradient-to-br from-white to-gray-100 rounded-full overflow-hidden shadow-2xl border-8 border-white border-opacity-30">
-                  <img
-                    src="/images/hero-jewelry.jpg"
-                    alt="Beautiful jewelry collection"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                </div>
-                
-                {/* Floating Elements */}
-                <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center animate-bounce-subtle shadow-2xl">
-                  <Heart className="h-12 w-12 text-white" />
-                </div>
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center shadow-2xl">
-                  <Star className="h-8 w-8 text-white" />
-                </div>
+              <div className="aspect-square bg-white bg-opacity-10 rounded-3xl overflow-hidden">
+                <img
+                  src="/images/hero-jewelry.jpg"
+                  alt="Beautiful jewelry collection"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                  }}
+                />
+              </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gold-500 rounded-full flex items-center justify-center animate-bounce-subtle">
+                <Heart className="h-8 w-8 text-white" />
+              </div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center">
+                <Star className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>

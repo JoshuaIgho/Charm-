@@ -206,33 +206,33 @@ const ProductCard = ({
 
   // Grid View
   return (
-    <div className="product-card group">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       {/* Product Image */}
-      <div className="product-image">
+      <div className="relative aspect-square overflow-hidden">
         <Link to={`/products/${product._id}`}>
           <img
             src={getImageUrl()}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             onError={() => setImageError(true)}
           />
         </Link>
 
         {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
           {product.isNewStock && (
-            <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg animate-pulse">
-              ✨ New
+            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+              New
             </span>
           )}
           {discountPercentage > 0 && (
-            <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg">
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
               -{discountPercentage}%
             </span>
           )}
           {product.stock?.status === 'low_stock' && (
-            <span className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg animate-bounce">
-              ⚠️ Low Stock
+            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+              Low Stock
             </span>
           )}
         </div>
@@ -241,40 +241,38 @@ const ProductCard = ({
         {isAuthenticated && (
           <button
             onClick={handleWishlistToggle}
-            className="absolute top-4 right-4 w-10 h-10 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full flex items-center justify-center text-gray-600 hover:text-red-500 transition-all duration-300 opacity-0 group-hover:opacity-100 transform group-hover:scale-110 shadow-lg"
+            className="absolute top-3 right-3 w-8 h-8 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full flex items-center justify-center text-gray-600 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
             title="Add to wishlist"
           >
-            <Heart className="h-5 w-5" />
+            <Heart className="h-4 w-4" />
           </button>
         )}
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500 flex items-end justify-center pb-8">
-          <div className="transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
-            {showQuickView && (
-              <button
-                className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors shadow-xl flex items-center gap-2 backdrop-blur-sm"
-                title="Quick view"
-              >
-                <Eye className="h-5 w-5" />
-                Quick View
-              </button>
-            )}
-          </div>
+        <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          {showQuickView && (
+            <button
+              className="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2"
+              title="Quick view"
+            >
+              <Eye className="h-4 w-4" />
+              Quick View
+            </button>
+          )}
         </div>
       </div>
 
       {/* Product Info */}
-      <div className="p-6">
-        <div className="mb-4">
+      <div className="p-4">
+        <div className="mb-2">
           {product.category && (
-            <p className="text-xs text-primary-600 uppercase tracking-wider font-bold mb-2 opacity-80">
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
               {product.category}
             </p>
           )}
           
           <Link to={`/products/${product._id}`}>
-            <h3 className="font-bold text-gray-900 hover:text-primary-600 transition-colors line-clamp-2 mb-3 text-lg group-hover:text-primary-600">
+            <h3 className="font-semibold text-gray-900 hover:text-primary-600 transition-colors line-clamp-2 mb-2">
               {product.name}
             </h3>
           </Link>
@@ -282,34 +280,34 @@ const ProductCard = ({
 
         {/* Rating */}
         {product.reviews?.averageRating > 0 && (
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-1 mb-3">
             <div className="flex items-center">
               {[...Array(5)].map((_, index) => (
                 <Star
                   key={index}
-                  className={`h-4 w-4 transition-colors ${
+                  className={`h-3 w-3 ${
                     index < Math.floor(product.reviews.averageRating)
-                      ? 'text-yellow-400 fill-current drop-shadow-sm'
+                      ? 'text-yellow-400 fill-current'
                       : 'text-gray-300'
                   }`}
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600 font-medium">
+            <span className="text-xs text-gray-600">
               ({product.reviews.totalReviews})
             </span>
           </div>
         )}
 
         {/* Price */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
             {discountPercentage > 0 && (
-              <span className="text-lg text-gray-500 line-through font-medium">
+              <span className="text-sm text-gray-500 line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
-            <span className="text-2xl font-black bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
+            <span className="text-lg font-bold text-primary-600">
               {formatPrice(product.price)}
             </span>
           </div>
@@ -319,36 +317,25 @@ const ProductCard = ({
         <button
           onClick={handleAddToCart}
           disabled={!product.isAvailable || isAddingToCart}
-          className={`w-full py-4 px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
-            !product.isAvailable 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : isAddingToCart
-              ? 'bg-primary-500 text-white cursor-wait'
-              : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800'
-          }`}
+          className="w-full py-2 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium"
         >
           {isAddingToCart ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Adding to Cart...
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Adding...
             </>
           ) : !product.isAvailable ? (
-            <>
-              ❌ Out of Stock
-            </>
+            'Out of Stock'
           ) : (
             <>
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-4 w-4" />
               Add to Cart
             </>
           )}
         </button>
       </div>
     </div>
-  )
-
-     
-
+  );
 };
 
 export default ProductCard;

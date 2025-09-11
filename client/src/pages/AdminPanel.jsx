@@ -14,9 +14,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import AdminDashboard from '../components/admin/AdminDashboard';
-import ProductManagement from '../components/admin/ProductManagement.jsx';
-import OrderManagement from '../components/admin/OrderManagement.jsx';
-import AdminSettings from '../components/admin/AdminSettings.jsx';
+import ProductManagement from '../components/admin/ProductManagement';
+import OrderManagement from '../components/admin/OrderManagement';
+import AdminSettings from '../components/admin/AdminSettings';
 
 const AdminPanel = () => {
   const location = useLocation();
