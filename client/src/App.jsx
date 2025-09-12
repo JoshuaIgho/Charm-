@@ -62,9 +62,7 @@ function AppRoutes() {
       <Route
         path="/admin/*"
         element={
-          <AdminProtectedRoute>
             <AdminPanel />
-          </AdminProtectedRoute>
         }
       />
 
