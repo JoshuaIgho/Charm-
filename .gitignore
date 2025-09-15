@@ -40,3 +40,11 @@ coverage/
 # Ignore env files
 .env
 server/.env
+client/.env
+
+# Ignore environment files
+.env
+*.env
+
+# Ignore config folder
+server/config/
