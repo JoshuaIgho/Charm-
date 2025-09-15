@@ -96,12 +96,12 @@ const LoginPage = () => {
         <div className="text-center animate-fade-in-down">
           <Link to="/" className="inline-flex items-center gap-4 text-3xl font-bold mb-6 group">
             <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-700 rounded-3xl flex items-center justify-center shadow-elegant group-hover:shadow-elegant-lg transition-all duration-300 group-hover:scale-105 relative overflow-hidden">
-              <span className="text-white text-2xl font-black relative z-10">TA</span>
+              <span className="text-white text-2xl font-black relative z-10">CBS</span>
               <div className="absolute inset-0 bg-gradient-to-br from-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </div>
             <div>
-              <span className="block text-gradient-primary font-black tracking-tight">TA JEWELRY</span>
-              <span className="block text-xs text-gray-600 font-semibold tracking-widest uppercase">For the T-Girlies</span>
+              <span className="block text-gradient-primary font-black tracking-tight">Charmé</span>
+              <span className="block text-xs text-gray-600 font-semibold tracking-widest uppercase">For the C-Girlies</span>
             </div>
           </Link>
           <h2 className="text-4xl font-black text-gray-900 mb-3">Welcome Back! ✨</h2>

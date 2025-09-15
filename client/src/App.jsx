@@ -1,9 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// App.jsx
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Context Providers
-import { AuthProvider, useAuth } from './hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth';
 import { CartProvider } from './hooks/useCart';
 
 // Layout Components
@@ -16,28 +19,88 @@ import ProductsPage from './pages/ProductsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UserDashboard from './pages/UserDashboard';
-import AdminLogin from './pages/AdminLogin';
 import AdminPanel from './pages/AdminPanel';
 
 // Protected Route Components
 import ProtectedRoute from './components/common/ProtectedRoute';
-import AdminProtectedRoute from './components/common/AdminProtectedRoute';
 
 // Global Styles
 import './styles/globals.css';
+import './style.css';
 
-// Temporary fallback for uninitialized auth
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="text-gray-500 text-xl">Loading...</div>
-  </div>
-);
+// ---------------- ADMIN LOGIN ----------------
+function AdminLogin({ handleSuccess }) {
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <h1>Welcome to Admin Portal</h1>
+        <p>Please sign in with your Google account to continue</p>
+        <GoogleLogin
+          onSuccess={handleSuccess}
+          onError={() => console.log("Google Login Failed")}
+          theme="filled_blue"
+          size="large"
+          text="signin_with"
+          shape="pill"
+        />
+      </div>
+    </div>
+  );
+}
 
-function AppRoutes() {
-  const { isInitialized } = useAuth();
+// ---------------- ADMIN PROTECTED ROUTE ----------------
+function AdminProtectedRoute({ isAuthenticated, user, handleLogout }) {
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You must log in to view this page.</p>
+          <a
+            href="/admin"
+            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Go to Admin Login
+          </a>
+        </div>
+      </div>
+    );
+  }
 
-  // Show loading while auth is initializing
-  if (!isInitialized) return <LoadingFallback />;
+  return <AdminPanel user={user} onLogout={handleLogout} />;
+}
+
+// ---------------- MAIN ROUTES (INSIDE ROUTER) ----------------
+function AppRoutes({ isAuthenticated, setIsAuthenticated, user, setUser }) {
+  const navigate = useNavigate();
+
+  const handleSuccess = async (credentialResponse) => {
+    const idToken = credentialResponse.credential;
+    try {
+      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      const userData = {
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture,
+      };
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      localStorage.setItem("adminUser", JSON.stringify(userData));
+
+      // Redirect to adminPanel
+      navigate("/adminPanel");
+    } catch (error) {
+      console.error("Error decoding token:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    localStorage.removeItem("adminUser");
+    navigate("/admin");
+  };
 
   return (
     <Routes>
@@ -47,7 +110,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected User Routes */}
+      {/* User Dashboard */}
       <Route
         path="/dashboard"
         element={
@@ -58,15 +121,19 @@ function AppRoutes() {
       />
 
       {/* Admin Routes */}
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLogin handleSuccess={handleSuccess} />} />
       <Route
-        path="/admin/*"
+        path="/adminPanel"
         element={
-            <AdminPanel />
+          <AdminProtectedRoute
+            isAuthenticated={isAuthenticated}
+            user={user}
+            handleLogout={handleLogout}
+          />
         }
       />
 
-      {/* 404 Route */}
+      {/* 404 */}
       <Route
         path="*"
         element={
@@ -88,41 +155,42 @@ function AppRoutes() {
   );
 }
 
+// ---------------- APP ROOT ----------------
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Load from localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem("adminUser");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Header */}
-            <Header />
-
-            {/* Main Content */}
-            <main className="flex-1">
-              <AppRoutes />
-            </main>
-
-            {/* Footer */}
-            <Footer />
-
-            {/* Toast Notifications */}
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-              className="z-50"
-            />
-          </div>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+              <Header />
+              <main className="flex-1">
+                <AppRoutes
+                  isAuthenticated={isAuthenticated}
+                  setIsAuthenticated={setIsAuthenticated}
+                  user={user}
+                  setUser={setUser}
+                />
+              </main>
+              <Footer />
+              <ToastContainer position="top-right" autoClose={5000} theme="light" className="z-50" />
+            </div>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

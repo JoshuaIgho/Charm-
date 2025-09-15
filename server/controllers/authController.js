@@ -1,9 +1,15 @@
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
 const User = require('../models/User');
-const Admin = require('../models/Admin');
 const { sendTokenResponse } = require('../middleware/auth');
-const { sendAdminTokenResponse } = require('../middleware/adminAuth');
+const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
+const { findAdminByEmail } = require("../models/adminModel");
+
+// Initialize Google OAuth client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -308,219 +314,57 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// ADMIN AUTHENTICATION
 
-// @desc    Login admin
-// @route   POST /api/auth/admin/login
-// @access  Public
+/// admin
+
+
+// Generate JWT
+function generateToken(admin) {
+  return jwt.sign(
+    { id: admin.id, email: admin.email, role: admin.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+}
+
+// Admin email/password login
 const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
+    const admin = await findAdminByEmail(email);
+    if (!admin) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
-    const { email, password } = req.body;
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
-    // Check for admin and include password
-    const admin = await Admin.findOne({ 
-      $or: [{ email }, { username: email }] 
-    }).select('+password');
-
-    if (!admin) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid admin credentials'
-      });
-    }
-
-    // Check if admin is active
-    if (!admin.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Admin account has been deactivated'
-      });
-    }
-
-    // Check if account is locked
-    if (admin.isLocked) {
-      return res.status(423).json({
-        success: false,
-        message: 'Account is temporarily locked. Please try again later.'
-      });
-    }
-
-    // Check password
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) {
-      // Increment failed login attempts
-      await admin.incLoginAttempts();
-      
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid admin credentials'
-      });
-    }
-
-    // Reset login attempts on successful login
-    if (admin.loginAttempts > 0) {
-      await admin.updateOne({
-        $unset: { loginAttempts: 1, lockUntil: 1 }
-      });
-    }
-
-    // Update last login
-    admin.lastLogin = new Date();
-    await admin.save({ validateBeforeSave: false });
-
-    // Send token response
-    sendAdminTokenResponse(admin, 200, res);
-
-  } catch (error) {
-    console.error('Admin login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during admin login'
-    });
+    const token = generateToken(admin);
+    res.json({ success: true, token, admin });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// @desc    Get current logged in admin
-// @route   GET /api/auth/admin/me
-// @access  Private (Admin)
-const getAdminMe = async (req, res) => {
+// Admin Google login
+const googleAdminLogin = async (req, res) => {
+  const { idToken } = req.body;
   try {
-    const admin = await Admin.findById(req.admin.id);
-    res.status(200).json({
-      success: true,
-      data: {
-        admin: admin.getSafeProfile()
-      }
-    });
-  } catch (error) {
-    console.error('Get admin me error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error getting admin profile'
-    });
-  }
-};
-
-// @desc    Update admin profile
-// @route   PUT /api/auth/admin/profile
-// @access  Private (Admin)
-const updateAdminProfile = async (req, res) => {
-  try {
-    const { firstName, lastName } = req.body;
-    
-    const admin = await Admin.findById(req.admin.id);
-    
-    if (firstName) admin.firstName = firstName;
-    if (lastName) admin.lastName = lastName;
-
-    await admin.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Admin profile updated successfully',
-      data: {
-        admin: admin.getSafeProfile()
-      }
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-  } catch (error) {
-    console.error('Update admin profile error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error updating admin profile'
-    });
-  }
-};
+    const payload = ticket.getPayload();
+    const email = payload.email;
 
-// @desc    Change admin password
-// @route   PUT /api/auth/admin/change-password
-// @access  Private (Admin)
-const changeAdminPassword = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
+    const admin = await findAdminByEmail(email);
+    if (!admin) return res.status(401).json({ success: false, message: "Not an admin" });
 
-    const { currentPassword, newPassword } = req.body;
-
-    const admin = await Admin.findById(req.admin.id).select('+password');
-
-    // Check current password
-    const isMatch = await admin.comparePassword(currentPassword);
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: 'Current password is incorrect'
-      });
-    }
-
-    // Update password
-    admin.password = newPassword;
-    await admin.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Admin password updated successfully'
-    });
-
-  } catch (error) {
-    console.error('Change admin password error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error changing admin password'
-    });
-  }
-};
-
-// @desc    Initialize default super admin
-// @route   POST /api/auth/admin/init
-// @access  Public (only works if no super admin exists)
-const initSuperAdmin = async (req, res) => {
-  try {
-    // Check if super admin already exists
-    const existingSuperAdmin = await Admin.findOne({ role: 'super_admin' });
-    if (existingSuperAdmin) {
-      return res.status(400).json({
-        success: false,
-        message: 'Super admin already exists'
-      });
-    }
-
-    // Create default super admin
-    const superAdmin = await Admin.createDefaultSuperAdmin();
-
-    res.status(201).json({
-      success: true,
-      message: 'Super admin created successfully',
-      data: {
-        admin: {
-          username: superAdmin.username,
-          email: superAdmin.email,
-          role: superAdmin.role
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Init super admin error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error creating super admin'
-    });
+    const token = generateToken(admin);
+    res.json({ success: true, token, admin });
+  } catch (err) {
+    console.error("Google admin login error:", err);
+    res.status(400).json({ success: false, message: "Google verification failed" });
   }
 };
 
@@ -533,8 +377,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   adminLogin,
-  getAdminMe,
-  updateAdminProfile,
-  changeAdminPassword,
-  initSuperAdmin
+  googleAdminLogin
 };

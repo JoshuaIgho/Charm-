@@ -107,6 +107,8 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await authService.adminLogin(email, password);
+      
+      
       if (response.success && response.token && response.data.admin) {
         localStorage.setItem('adminToken', response.token);
         setAdmin(response.data.admin);
