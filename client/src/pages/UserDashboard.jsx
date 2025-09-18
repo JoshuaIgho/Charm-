@@ -97,33 +97,7 @@ const UserDashboard = () => {
     }
   };
 
-  const sidebarItems = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: User
-    },
-    {
-      id: 'orders',
-      label: 'My Orders',
-      icon: Package
-    },
-    {
-      id: 'wishlist',
-      label: 'Wishlist',
-      icon: Heart
-    },
-    {
-      id: 'addresses',
-      label: 'Addresses',
-      icon: MapPin
-    },
-    {
-      id: 'settings',
-      label: 'Account Settings',
-      icon: Settings
-    }
-  ];
+
 
   const cartCount = getItemsCount();
   const cartTotal = getTotalPrice();
@@ -132,56 +106,10 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="card sticky top-8">
-              {/* User Info */}
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                  <span className="text-primary-600 text-xl font-bold">
-                    {user?.firstName?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {user?.fullName || 'User'}
-                  </h3>
-                  <p className="text-sm text-gray-600">{user?.email}</p>
-                </div>
-              </div>
-
-              {/* Navigation */}
-              <nav className="space-y-2">
-                {sidebarItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                      activeTab === item.id
-                        ? 'bg-primary-50 text-primary-600 border border-primary-200'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </button>
-                ))}
-                
-                <hr className="my-4" />
-                
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="font-medium">Logout</span>
-                </button>
-              </nav>
-            </div>
-          </div>
+        
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-12">
             {activeTab === 'overview' && (
               <div className="space-y-8">
                 {/* Welcome Message */}

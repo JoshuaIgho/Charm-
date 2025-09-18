@@ -12,6 +12,21 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // Public routes that must NOT have Authorization header
+    const publicRoutes = [
+      '/auth/register',
+      '/auth/login',
+      '/auth/forgot-password',
+      '/auth/reset-password',
+      '/auth/admin/login',
+      '/auth/admin/init'
+    ];
+
+    // Skip token if request matches a public route
+    if (publicRoutes.some(route => config.url?.includes(route))) {
+      return config;
+    }
+
     // Add user token if available
     const userToken = localStorage.getItem('userToken');
     if (userToken && !config.headers.Authorization) {
@@ -28,9 +43,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle common errors
@@ -39,13 +52,11 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    // Handle common HTTP errors
     if (error.response) {
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 401:
-          // Unauthorized - clear tokens and redirect to login
           if (data.message?.includes('admin')) {
             localStorage.removeItem('adminToken');
             if (window.location.pathname.includes('/admin/')) {
@@ -58,61 +69,54 @@ api.interceptors.response.use(
             }
           }
           break;
-          
+
         case 403:
-          // Forbidden - insufficient permissions
           console.error('Access denied:', data.message);
           break;
-          
+
         case 404:
-          // Not found
           console.error('Resource not found:', error.config.url);
           break;
-          
+
         case 429:
-          // Rate limit exceeded
           console.error('Rate limit exceeded. Please try again later.');
           break;
-          
+
         case 500:
-          // Internal server error
           console.error('Server error. Please try again later.');
           break;
-          
+
         default:
           console.error('API Error:', data.message || error.message);
       }
-      
-      // Return the error response for handling in components
+
       return Promise.reject({
         message: data.message || 'An error occurred',
         status,
         data
       });
     }
-    
-    // Network error or timeout
+
     if (error.code === 'ECONNABORTED') {
       return Promise.reject({
         message: 'Request timeout. Please check your connection.',
         code: 'TIMEOUT'
       });
     }
-    
+
     if (!error.response) {
       return Promise.reject({
         message: 'Network error. Please check your connection.',
         code: 'NETWORK_ERROR'
       });
     }
-    
+
     return Promise.reject(error);
   }
 );
 
 // Generic API methods
 const apiService = {
-  // GET request
   get: async (url, config = {}) => {
     try {
       return await api.get(url, config);
@@ -121,7 +125,6 @@ const apiService = {
     }
   },
 
-  // POST request
   post: async (url, data = {}, config = {}) => {
     try {
       return await api.post(url, data, config);
@@ -130,7 +133,6 @@ const apiService = {
     }
   },
 
-  // PUT request
   put: async (url, data = {}, config = {}) => {
     try {
       return await api.put(url, data, config);
@@ -139,7 +141,6 @@ const apiService = {
     }
   },
 
-  // PATCH request
   patch: async (url, data = {}, config = {}) => {
     try {
       return await api.patch(url, data, config);
@@ -148,7 +149,6 @@ const apiService = {
     }
   },
 
-  // DELETE request
   delete: async (url, config = {}) => {
     try {
       return await api.delete(url, config);
@@ -157,42 +157,29 @@ const apiService = {
     }
   },
 
-  // Upload file
   upload: async (url, formData, onUploadProgress = null) => {
     try {
       const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       };
-
       if (onUploadProgress) {
         config.onUploadProgress = onUploadProgress;
       }
-
       return await api.post(url, formData, config);
     } catch (error) {
       throw error;
     }
   },
 
-  // Download file
   download: async (url, filename) => {
     try {
-      const response = await api.get(url, {
-        responseType: 'blob'
-      });
-
-      // Create blob link to download
+      const response = await api.get(url, { responseType: 'blob' });
       const blob = new Blob([response]);
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
       link.download = filename;
       link.click();
-      
-      // Clean up
       window.URL.revokeObjectURL(link.href);
-      
       return response;
     } catch (error) {
       throw error;
@@ -200,6 +187,5 @@ const apiService = {
   }
 };
 
-// Export both the configured axios instance and the service
 export { api };
 export default apiService;

@@ -1,40 +1,55 @@
 // App.jsx
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { ToastContainer } from "react-toastify";
+import {
+  SignedIn,
+  SignedOut,
+  SignIn,
+  SignUp,
+  UserButton,
+} from "@clerk/clerk-react";
+
+import "react-toastify/dist/ReactToastify.css";
 
 // Context Providers
-import { AuthProvider } from './hooks/useAuth';
-import { CartProvider } from './hooks/useCart';
+import { AuthProvider } from "./hooks/useAuth";
+import { CartProvider } from "./hooks/useCart";
 
 // Layout Components
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
 
 // Pages
-import HomePage from './pages/HomePage';
-import ProductsPage from './pages/ProductsPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import UserDashboard from './pages/UserDashboard';
-import AdminPanel from './pages/AdminPanel';
-
-// Protected Route Components
-import ProtectedRoute from './components/common/ProtectedRoute';
+import HomePage from "./pages/HomePage";
+import ProductsPage from "./pages/ProductsPage";
+import UserDashboard from "./pages/UserDashboard";
+import AdminPanel from "./pages/AdminPanel";
+import ProfilePage from "./pages/ProfilePage";
+import OrdersPage from "./pages/OrdersPage";
+import WishlistPage from "./pages/WishlistPage";
+import AddressesPage from "./pages/AddressesPage";
+import SettingsPage from "./pages/SettingsPage";
 
 // Global Styles
-import './styles/globals.css';
-import './style.css';
+import "./styles/globals.css";
+import "./style.css";
 
 // ---------------- ADMIN LOGIN ----------------
 function AdminLogin({ handleSuccess }) {
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1>Welcome to Admin Portal</h1>
-        <p>Please sign in with your Google account to continue</p>
+    <div className="login-container flex items-center justify-center min-h-[70vh]">
+      <div className="login-card p-6 bg-white shadow rounded-xl text-center">
+        <h1 className="text-2xl font-bold mb-2">Admin Portal</h1>
+        <p className="text-gray-600 mb-4">
+          Please sign in with your Google account
+        </p>
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={() => console.log("Google Login Failed")}
@@ -55,7 +70,9 @@ function AdminProtectedRoute({ isAuthenticated, user, handleLogout }) {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">You must log in to view this page.</p>
+          <p className="text-gray-600 mb-4">
+            You must log in with Google to view this page.
+          </p>
           <a
             href="/admin"
             className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
@@ -70,14 +87,15 @@ function AdminProtectedRoute({ isAuthenticated, user, handleLogout }) {
   return <AdminPanel user={user} onLogout={handleLogout} />;
 }
 
-// ---------------- MAIN ROUTES (INSIDE ROUTER) ----------------
+// ---------------- MAIN ROUTES ----------------
 function AppRoutes({ isAuthenticated, setIsAuthenticated, user, setUser }) {
   const navigate = useNavigate();
 
+  // Handle Google OAuth Success
   const handleSuccess = async (credentialResponse) => {
     const idToken = credentialResponse.credential;
     try {
-      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      const payload = JSON.parse(atob(idToken.split(".")[1]));
       const userData = {
         name: payload.name,
         email: payload.email,
@@ -88,13 +106,13 @@ function AppRoutes({ isAuthenticated, setIsAuthenticated, user, setUser }) {
 
       localStorage.setItem("adminUser", JSON.stringify(userData));
 
-      // Redirect to adminPanel
       navigate("/adminPanel");
     } catch (error) {
       console.error("Error decoding token:", error);
     }
   };
 
+  // Handle Admin Logout
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUser(null);
@@ -104,23 +122,73 @@ function AppRoutes({ isAuthenticated, setIsAuthenticated, user, setUser }) {
 
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* Public */}
       <Route path="/" element={<HomePage />} />
       <Route path="/products" element={<ProductsPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
 
-      {/* User Dashboard */}
+      {/* Clerk Auth */}
+      <Route
+        path="/sign-in"
+        element={<SignIn routing="path" path="/sign-in" />}
+      />
+      <Route
+        path="/sign-up"
+        element={<SignUp routing="path" path="/sign-up" />}
+      />
+
+      {/* User Dashboard (Clerk Protected) */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <SignedIn>
             <UserDashboard />
-          </ProtectedRoute>
+          </SignedIn>
         }
       />
 
-      {/* Admin Routes */}
+      {/* Extra Clerk Protected Routes */}
+      <Route
+        path="/profile"
+        element={
+          <SignedIn>
+            <ProfilePage />
+          </SignedIn>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <SignedIn>
+            <OrdersPage />
+          </SignedIn>
+        }
+      />
+      <Route
+        path="/wishlist"
+        element={
+          <SignedIn>
+            <WishlistPage />
+          </SignedIn>
+        }
+      />
+      <Route
+        path="/addresses"
+        element={
+          <SignedIn>
+            <AddressesPage />
+          </SignedIn>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <SignedIn>
+            <SettingsPage />
+          </SignedIn>
+        }
+      />
+
+      {/* Admin (Google OAuth) */}
       <Route path="/admin" element={<AdminLogin handleSuccess={handleSuccess} />} />
       <Route
         path="/adminPanel"
@@ -160,7 +228,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Load from localStorage
+  // Restore Admin session
   useEffect(() => {
     const savedUser = localStorage.getItem("adminUser");
     if (savedUser) {
@@ -175,7 +243,23 @@ function App() {
         <CartProvider>
           <Router>
             <div className="min-h-screen bg-gray-50 flex flex-col">
+              {/* Navbar */}
               <Header />
+              <nav className="p-4 border-b flex justify-end">
+                <SignedIn>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+                <SignedOut>
+                  <a
+                    href="/sign-in"
+                    className="text-blue-600 font-medium hover:underline"
+                  >
+                    Sign In
+                  </a>
+                </SignedOut>
+              </nav>
+
+              {/* Main Routes */}
               <main className="flex-1">
                 <AppRoutes
                   isAuthenticated={isAuthenticated}
@@ -184,8 +268,15 @@ function App() {
                   setUser={setUser}
                 />
               </main>
+
+              {/* Footer */}
               <Footer />
-              <ToastContainer position="top-right" autoClose={5000} theme="light" className="z-50" />
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                theme="light"
+                className="z-50"
+              />
             </div>
           </Router>
         </CartProvider>
